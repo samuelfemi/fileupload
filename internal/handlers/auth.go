@@ -24,13 +24,17 @@ func (h *Handlers) GoogleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	sameSite := http.SameSiteLaxMode
+	if h.cfg.Env == "production" {
+		sameSite = http.SameSiteNoneMode
+	}
 	http.SetCookie(w, &http.Cookie{
 		Name:     "oauth_state",
 		Value:    state,
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   h.cfg.Env == "production",
-		SameSite: http.SameSiteLaxMode,
+		SameSite: sameSite,
 		MaxAge:   600, // 10 min
 	})
 
@@ -78,13 +82,17 @@ func (h *Handlers) GoogleCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	sameSite := http.SameSiteLaxMode
+	if h.cfg.Env == "production" {
+		sameSite = http.SameSiteNoneMode
+	}
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session",
 		Value:    sessionToken,
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   h.cfg.Env == "production",
-		SameSite: http.SameSiteLaxMode,
+		SameSite: sameSite,
 		MaxAge:   7 * 24 * 3600,
 	})
 
@@ -92,11 +100,17 @@ func (h *Handlers) GoogleCallback(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) Logout(w http.ResponseWriter, r *http.Request) {
+	sameSite := http.SameSiteLaxMode
+	if h.cfg.Env == "production" {
+		sameSite = http.SameSiteNoneMode
+	}
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session",
 		Value:    "",
 		Path:     "/",
 		HttpOnly: true,
+		Secure:   h.cfg.Env == "production",
+		SameSite: sameSite,
 		MaxAge:   -1,
 		Expires:  time.Unix(0, 0),
 	})
